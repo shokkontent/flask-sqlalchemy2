@@ -10,4 +10,5 @@ class JobsForm(FlaskForm):
     work_size = IntegerField("Время работы")
     collaborators = StringField("Колабораторы")
     is_finished = SubmitField('Готово?')
+    remember_me = BooleanField('Вы завершили')
     submit = SubmitField('Применить')
