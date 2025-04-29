@@ -6,6 +6,7 @@ from data import db_session
 from data.Jobs import Jobs
 from data.users import User
 from data.departments import Department
+from forms.departaments import DepartamentsForm
 
 from forms.jobs import JobsForm
 from forms.login import LoginForm
