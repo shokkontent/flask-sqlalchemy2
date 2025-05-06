@@ -24,7 +24,7 @@
             </td>
         </tr>
     </table>
-    {% if current_user.is_authenticated and current_user == item.user %}
+    {% if current_user.is_authenticated and current_user == item.id %}
     <div>
         <a href="/departaments/{{ item.id }}" class="btn btn-warning">
             Изменить

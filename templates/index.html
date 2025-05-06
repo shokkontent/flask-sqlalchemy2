@@ -34,7 +34,7 @@
             </td>
         </tr>
     </table>
-    {% if current_user.is_authenticated and current_user.id == item.team_leader %}
+    {% if current_user.is_authenticated and current_user.id == item.id %}
     <div>
         <a href="/jobs/{{ item.id }}" class="btn btn-warning">
             Изменить
