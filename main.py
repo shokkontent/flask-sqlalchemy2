@@ -118,7 +118,7 @@ def add_jobs():
         jobs.collaborators = form.collaborators.data
         jobs.work_size = form.work_size.data
         jobs.is_finished = form.is_finished.data
-        db_sess.add(jobs)
+        current_user.jobs.append(jobs)
         db_sess.merge(current_user)
         db_sess.commit()
         return redirect('/')

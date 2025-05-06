@@ -1,6 +1,7 @@
 import datetime
 import sqlalchemy
 from flask_login import UserMixin
+from sqlalchemy_serializer import SerializerMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from .db_session import SqlAlchemyBase
@@ -21,7 +22,7 @@ class User(SqlAlchemyBase, UserMixin):
     email = sqlalchemy.Column(sqlalchemy.String, nullable=True, unique=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     modified_date = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    news = orm.relationship("Jobs", back_populates='user')
+    jobs = orm.relationship("Jobs", back_populates='user')
 
     def __str__(self):
         return self.name
