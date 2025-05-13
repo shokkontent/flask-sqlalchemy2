@@ -23,6 +23,7 @@ class User(SqlAlchemyBase, UserMixin):
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     modified_date = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     jobs = orm.relationship("Jobs", back_populates='user')
+    departaments = orm.relationship("Department", back_populates='user2')
 
     def __str__(self):
         return self.name
