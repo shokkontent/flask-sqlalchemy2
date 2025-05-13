@@ -56,7 +56,7 @@ def edit_departaments(id):
     form = DepartamentsForm()
     if request.method == "GET":
         db_sess = db_session.create_session()
-        departaments = db_sess.query(DepartamentsForm).filter(
+        departaments = db_sess.query(Department).filter(
             Department.id == id,
             (Department.user2 == current_user) |
             (current_user.id == 1)
