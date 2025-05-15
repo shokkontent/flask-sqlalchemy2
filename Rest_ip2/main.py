@@ -2,18 +2,41 @@ from flask import (Flask, request, render_template, redirect, abort,
                    make_response, jsonify)
 from flask_login import LoginManager, login_user, login_required, logout_user, \
     current_user
+
+from Rest_ip2.data import jobs_api
 from data import db_session
 from data.Jobs import Jobs
 from data.users import User
 from data.departments import Department
-from forms.departaments import DepartamentsForm
 
+from forms.departaments import DepartamentsForm
 from forms.jobs import JobsForm
 from forms.login import LoginForm
 from forms.register import RegisterForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+
+
+@app.route('/departaments', methods=['GET', 'POST'])
+@login_required
+def add_departaments():
+    form = DepartamentsForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        departaments = Department()
+        departaments.title = form.title.data
+        departaments.chief = form.chief.data
+        departaments.members = form.members.data
+        departaments.email = form.email.data
+        current_user.departaments.append(departaments)
+        db_sess.merge(current_user)
+        db_sess.commit()
+        return redirect('/departamentsDisplay')
+    return render_template('departaments.html',
+                           title='Добавление департамента',
+                           form=form
+                           )
 
 
 @app.route('/departamentsDisplay', methods=['GET', 'POST'])
@@ -29,50 +52,29 @@ def display_departaments():
                            )
 
 
-@app.route('/departaments', methods=['GET', 'POST'])
-@login_required
-def add_departaments():
-    form = DepartamentsForm()
-    if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        departaments = Department()
-        departaments.title = form.title.data
-        departaments.chief = form.chief.data
-        departaments.members = form.members.data
-        departaments.email = form.email.data
-        db_sess.add(departaments)
-        db_sess.merge(current_user)
-        db_sess.commit()
-        return redirect('/departamentsDisplay')
-    return render_template('departaments.html',
-                           title='Добавление департамента',
-                           form=form
-                           )
-
-
 @app.route('/departaments/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_departaments(id):
     form = DepartamentsForm()
     if request.method == "GET":
         db_sess = db_session.create_session()
-        departaments = db_sess.query(DepartamentsForm).filter(
+        departaments = db_sess.query(Department).filter(
             Department.id == id,
-            (Department.user == current_user) |
+            (Department.user2 == current_user) |
             (current_user.id == 1)
         ).first()
         if departaments:
-            departaments.title = form.title.data
-            departaments.chief = form.chief.data
-            departaments.members = form.members.data
-            departaments.email = form.email.data
+            form.title.data = departaments.title
+            form.chief.data = departaments.chief
+            form.members.data = departaments.members
+            form.email.data = departaments.email
         else:
             abort(404)
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         departaments = db_sess.query(Department).filter(
             Department.id == id,
-            (Department.user == current_user) |
+            (Department.user2 == current_user) |
             (current_user.id == 1)
         ).first()
         if departaments:
@@ -96,7 +98,7 @@ def departaments_delete(id):
     db_sess = db_session.create_session()
     departaments = db_sess.query(Department).filter(Department.id == id,
                                                     (
-                                                            Department.user == current_user) |
+                                                            Department.user2 == current_user) |
                                                     (current_user.id == 1)
                                                     ).first()
     if departaments:
@@ -119,7 +121,7 @@ def add_jobs():
         jobs.collaborators = form.collaborators.data
         jobs.work_size = form.work_size.data
         jobs.is_finished = form.is_finished.data
-        db_sess.add(jobs)
+        current_user.jobs.append(jobs)
         db_sess.merge(current_user)
         db_sess.commit()
         return redirect('/')
@@ -139,11 +141,11 @@ def edit_jobs(id):
                                           (current_user.id == 1)
                                           ).first()
         if jobs:
-            jobs.job = form.job.data
-            jobs.team_leader = form.team_leader.data
-            jobs.collaborators = form.collaborators.data
-            jobs.work_size = form.work_size.data
-            jobs.is_finished = form.is_finished.data
+            form.job.data = jobs.job
+            form.team_leader.data = jobs.team_leader
+            form.collaborators.data = jobs.collaborators
+            form.work_size.data = jobs.work_size
+            form.is_finished.data = jobs.is_finished
         else:
             abort(404)
     if form.validate_on_submit():
@@ -248,16 +250,13 @@ def login():
 
 def main():
     db_session.global_init("db/blogs.db")
-    app.run(debug=True, port=8080, host='127.0.0.1')
-
+    app.register_blueprint(jobs_api.blueprint)
+    app.run()
 
 @app.route("/")
 def index():
     db_sess = db_session.create_session()
-    if current_user.is_authenticated:
-        jobs = db_sess.query(Jobs).all()
-    else:
-        jobs = []
+    jobs = db_sess.query(Jobs).all()
     return render_template("index.html", jobs=jobs)
 
 
